@@ -174,7 +174,7 @@ else()
 endif()
 
 file(GLOB_RECURSE EZWIN_LIBRARY_SOURCES ${PROJECT_SOURCE_DIR}/src/*.c)
-target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/include")
+# target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/include")
 add_library(${PROJECT_NAME} ${LIBRARY_BUILD_TYPE} EZWIN_LIBRARY_SOURCES)
 
 if (COMPILE_FOR_BUILD_HOST_ONLY)

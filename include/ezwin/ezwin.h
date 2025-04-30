@@ -2,9 +2,20 @@
 #define EZWIN_API_H
 
 #include <stdint.h>
+#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if defined(EZWIN_IS_BUILT_AS_SHARED_LIB)
+    #if defined(_WIN32)
+        #define EZAPI __declspec(dllimport)
+    #elif defined(__GNUC__)
+        #define EZAPI
+    #endif
+#elif defined(EZWIN_IS_BUILT_AS_STATIC_LIB)
+    #define EZAPI
 #endif
 
 //// * EZ INPUT KEY ENUMS * ////
