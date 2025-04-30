@@ -108,6 +108,17 @@ function(generate_wayland_protocol_code)
     # TODO: generate wayland protocol headers and source in here
 endfunction()
 
+option(EZWIN_BUILD_SHARED_LIBRARY "Build libezwin as shared library (.dll/.so)" OFF)
+option(EZWIN_BUILD_STATIC_LIBRARY "Build libezwin as static library (.lib/.a)" ON)
+if (EZWIN_BUILD_SHARED_LIBRARY AND EZWIN_BUILD_STATIC_LIBRARY)
+    set(EZWIN_BUILD_SHARED_LIBRARY OFF)
+    set(LIBRARY_BUILD_TYPE STATIC)
+elif(EZWIN_BUILD_SHARED_LIBRARY)
+    set(LIBRARY_BUILD_TYPE SHARED)
+elif(EZWIN_BUILD_STATIC_LIBRARY)
+    set(LIBRARY_BUILD_TYPE STATIC)
+endif()
+
 option(COMPILE_FOR_BUILD_HOST_ONLY "Compile for build host only" ON)
 option(CROSS_COMPILE_FOR_WINDOWS "Cross compile for Windows platform" OFF)
 option(CROSS_COMPILE_FOR_MACOS "Cross compile for MacOS platform" OFF)
@@ -117,6 +128,39 @@ option(CROSS_COMPILE_FOR_ALL_PLATFORMS "Cross compile for all platforms" OFF)
 option(SUPPORT_X11_ONLY "Build with X11 support only under Linux" OFF)
 option(SUPPORT_WAYLAND_ONLY "Build with Wayland support only under Linux" OFF)
 option(SUPPORT_BOTH_X11_AND_WAYLAND "Build with both X11 and Wayland support under Linux" ON)
+
+# Setting things required to export to config.h
+set(EZWIN_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(EZWIN_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(EZWIN_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+
+if(LIBRARY_BUILD_TYPE STREQUAL "SHARED")
+    set(IS_SHARED_BUILD 1)
+    set(IS_STATIC_BUILD 0)
+elseif(LIBRARY_BUILD_TYPE STREQUAL "STATIC")
+    set(IS_SHARED_BUILD 0)
+    set(IS_STATIC_BUILD 1)
+endif()
+
+if(SUPPORT_X11_ONLY)
+    set(SHOULD_SUPPORT_X11 1)
+    set(SHOULD_SUPPORT_WAYLAND 0)
+elseif(SUPPORT_WAYLAND_ONLY)
+    set(SHOULD_SUPPORT_X11 0)
+    set(SHOULD_SUPPORT_WAYLAND 1)
+elseif(SUPPORT_BOTH_X11_AND_WAYLAND)
+    set(SHOULD_SUPPORT_X11 1)
+    set(SHOULD_SUPPORT_WAYLAND 1)
+endif()
+
+configure_file(
+    ${PROJECT_SOURCE_DIR}/cmake/config.h.in
+    ${PROJECT_SOURCE_DIR}/include/ezwin/config.h
+)
+configure_file(
+    ${PROJECT_SOURCE_DIR}/cmake/config.h.in
+    ${PROJECT_SOURCE_DIR}/src/config.h
+)
 
 # Detect the platform
 if(WIN32)
@@ -131,7 +175,7 @@ endif()
 
 file(GLOB_RECURSE EZWIN_LIBRARY_SOURCES ${PROJECT_SOURCE_DIR}/src/*.c)
 target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/include")
-add_library(${PROJECT_NAME} STATIC EZWIN_LIBRARY_SOURCES)
+add_library(${PROJECT_NAME} ${LIBRARY_BUILD_TYPE} EZWIN_LIBRARY_SOURCES)
 
 if (COMPILE_FOR_BUILD_HOST_ONLY)
 
@@ -161,18 +205,14 @@ if (COMPILE_FOR_BUILD_HOST_ONLY)
             else()
                 message(FATAL_ERROR "X11 link dependency missing!")
             endif()
-        endif()
-
-        if (SUPPORT_WAYLAND_ONLY)
+        elseif (SUPPORT_WAYLAND_ONLY)
             find_wayland_link_dependencies()
             if (NOT WAYLAND_LINK_DEPENDENCY_MISSING)
                 target_link_libraries(${PROJECT_NAME} PRIVATE LIBS_PATHS_REQUIRED_FOR_WAYLAND_SUPPORT)
             else()
                 message(FATAL_ERROR "Wayland link dependency missing!")
             endif()
-        endif()
-
-        if (SUPPORT_BOTH_X11_AND_WAYLAND)
+        elseif (SUPPORT_BOTH_X11_AND_WAYLAND)
             find_x11_link_dependencies()
             find_wayland_link_dependencies()
             if (NOT X11_LINK_DEPENDENCY_MISSING
