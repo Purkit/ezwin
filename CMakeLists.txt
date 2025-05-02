@@ -1,5 +1,3 @@
-include(CheckLibraryExists)
-
 cmake_minimum_required(VERSION 3.28)
 
 project(ezwin
@@ -106,8 +104,8 @@ function(generate_wayland_protocol_code)
     # TODO: generate wayland protocol headers and source in here
 endfunction()
 
-option(EZWIN_BUILD_SHARED_LIBRARY "Build libezwin as shared library (.dll/.so)" OFF)
-option(EZWIN_BUILD_STATIC_LIBRARY "Build libezwin as static library (.lib/.a)" ON)
+option(EZWIN_BUILD_SHARED_LIBRARY "Build libezwin as shared library (.dll/.so)" ON)
+option(EZWIN_BUILD_STATIC_LIBRARY "Build libezwin as static library (.lib/.a)" OFF)
 if (EZWIN_BUILD_SHARED_LIBRARY AND EZWIN_BUILD_STATIC_LIBRARY)
     set(EZWIN_BUILD_SHARED_LIBRARY OFF)
     set(LIBRARY_BUILD_TYPE STATIC)
@@ -197,16 +195,12 @@ configure_file(
     ${PROJECT_SOURCE_DIR}/cmake/config.h.in
     ${PROJECT_SOURCE_DIR}/include/ezwin/config.h
 )
-configure_file(
-    ${PROJECT_SOURCE_DIR}/cmake/config.h.in
-    ${PROJECT_SOURCE_DIR}/src/config.h
-)
 
 
+file(GLOB_RECURSE EZWIN_LIBRARY_SOURCES ${PROJECT_SOURCE_DIR}/src/**/*.c)
+add_library(${PROJECT_NAME} ${LIBRARY_BUILD_TYPE} ${EZWIN_LIBRARY_SOURCES})
 
-file(GLOB_RECURSE EZWIN_LIBRARY_SOURCES ${PROJECT_SOURCE_DIR}/src/*/*.c)
-# target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/include")
-add_library(${PROJECT_NAME} ${LIBRARY_BUILD_TYPE} EZWIN_LIBRARY_SOURCES)
+target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
 if (COMPILE_FOR_BUILD_HOST_ONLY)
 

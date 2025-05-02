@@ -8,15 +8,37 @@
 extern "C" {
 #endif
 
-#if defined(EZWIN_IS_BUILT_AS_SHARED_LIB)
-#if defined(_WIN32)
-#define EZAPI __declspec(dllimport)
-#elif defined(__GNUC__)
-#define EZAPI
+// clang-format off
+#ifndef EZ_EXPORT_SYMBOLS
+#define EZ_IMPORT_SYMBOLS
 #endif
-#elif defined(EZWIN_IS_BUILT_AS_STATIC_LIB)
-#define EZAPI
+
+#if defined (EZWIN_SHARED_BUILD)
+    #if defined (EZ_EXPORT_SYMBOLS)
+        // define EZAPI in export config
+        #if defined (EZWIN_COMPILER_GCC)
+            #define EZAPI __attribute__((visibility("default")))
+        #elif defined (EZWIN_COMPILER_CLANG)
+            #define EZAPI __attribute__((visibility("default")))
+        #elif defined (EZWIN_COMPILER_MSVC)
+            #define EZAPI __declspec(dllexport)
+        #endif
+    #elif defined (EZ_IMPORT_SYMBOLS)
+        // define EZAPI in import config
+        #if defined (EZWIN_COMPILER_GCC)
+            #define EZAPI
+        #elif defined (EZWIN_COMPILER_CLANG)
+            #define EZAPI
+        #elif defined (EZWIN_COMPILER_MSVC)
+            #define EZAPI __declspec(dllimport)
+        #endif
+    #endif
+#elif defined (EZWIN_STATIC_BUILD)
+    // define EZAPI as nothing
+    #define EZAPI
 #endif
+
+// clang-format on
 
 //// * EZ INPUT KEY ENUMS * ////
 typedef enum _KeyState { UNPRESSED = 0, PRESSED = 1 } KeyState;
@@ -158,7 +180,7 @@ typedef enum _ModifierKeys {
 } EzModifierKeys;
 
 //// * FUNCTION POINTER TYPES FOR CALLBACK * ////
-struct EzWindow;
+typedef struct EzWindow EzWindow;
 typedef void (*fp_resize)(EzWindow *window);
 typedef void (*fp_render)(EzWindow *window, double time);
 typedef void (*fp_keyEvent)(EzWindow *window, EzKeyCode key, KeyAction action);
