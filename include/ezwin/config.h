@@ -1,14 +1,32 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+// clang-format off
+
 #define EZWIN_VERSION_MAJOR 1
 #define EZWIN_VERSION_MINOR 0
 #define EZWIN_VERSION_PATCH 0
 
-#define EZWIN_IS_BUILT_AS_SHARED_LIB 0
-#define EZWIN_IS_BUILT_AS_STATIC_LIB 1
+/* #undef EZWIN_PLATFORM_WINDOWS */
+#define EZWIN_PLATFORM_LINUX
+/* #undef EZWIN_PLATFORM_MACOS */
+/* #undef EZWIN_PLATFORM_ANDROID */
+#define EZWIN_PLATFORM_UNIX
 
-#define X11_SUPPORT 1
-#define WAYLAND_SUPPORT 1
+#define EZWIN_PLATFORM_STRING "Linux"
+#define EZWIN_DISTRO_STRING "Garuda Linux"
+#define EZWIN_DISTRO_BASED_ON_STRING "arch"
+
+#define EZWIN_COMPILER_GCC
+/* #undef EZWIN_COMPILER_CLANG */
+/* #undef EZWIN_COMPILER_MSVC */
+
+/* #undef EZWIN_SHARED_BUILD */
+#define EZWIN_STATIC_BUILD
+
+#define EZWIN_SUPPORT_X11
+#define EZWIN_SUPPORT_WAYLAND
+
+// clang-format on
 
 #endif // CONFIG_H
